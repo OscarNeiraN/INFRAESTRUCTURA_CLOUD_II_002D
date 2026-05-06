@@ -4,7 +4,7 @@ resource "aws_instance" "apps" {
   instance_type = each.value.type
   subnet_id     = var.subnet_map_ids[each.value.subnet_key]
   vpc_security_group_ids = var.vpc_security_group_ids
-  key_name = "my-key"
+  key_name = var.key_name
 
   tags = {
     Name = lower("${each.key}-${var.project_name}")

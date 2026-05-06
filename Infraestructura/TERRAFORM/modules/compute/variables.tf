@@ -6,6 +6,11 @@ variable "enable_compute"   { type = bool }
 variable "vpc_security_group_ids" {
   type = list(string)
 }
+
+variable "key_name" {
+  type = string
+}
+
 variable "ami_id" {
   description = "ID de la AMI proporcionado por la raiz"
   type        = string

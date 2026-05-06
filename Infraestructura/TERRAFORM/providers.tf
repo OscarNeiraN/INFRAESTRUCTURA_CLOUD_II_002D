@@ -1,12 +1,10 @@
 terraform {
   required_providers {
-    aws = { source = "hashicorp/aws", version = ">~6.0" }
+    aws = { source = "hashicorp/aws", version = "~> 6.0" }
+    tls = { source = "hashicorp/tls", version = "~> 4.0" }
   }
-  backend "s3" {
-    bucket  = "state-terraform-examen"
-    key     = "terraform.tfstate"
-    region  = "us-east-1"
-    encrypt = true
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }
 

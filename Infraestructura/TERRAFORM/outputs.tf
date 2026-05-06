@@ -6,6 +6,12 @@ output "servidores_info" {
   value       = module.compute.instance_public_ips
   description = "Lista de servidores desplegados y sus IPs"
 }
-output "id_grupo_seguridad" {
-  value = module.security.security_group_id
+
+output "alb_dns_name" {
+  value       = module.alb.alb_dns_name
+  description = "DNS del balanceador de carga"
+}
+
+output "id_grupo_seguridad_ec2" {
+  value = module.security.ec2_sg_id
 }

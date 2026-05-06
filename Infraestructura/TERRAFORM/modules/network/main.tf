@@ -1,3 +1,8 @@
+locals {
+  public_subnets  = { for k, v in var.subnets_config : k => v if v.public }
+  private_subnets = { for k, v in var.subnets_config : k => v if !v.public }
+}
+
 resource "aws_vpc" "main" {
   count = var.enable_network ? 1 : 0
   cidr_block           = var.vpc_cidr
@@ -7,11 +12,20 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  for_each = var.enable_network ? var.subnets_config : {}
+  for_each = var.enable_network ? local.public_subnets : {}
   vpc_id                  = aws_vpc.main[0].id
   cidr_block              = cidrsubnet(aws_vpc.main[0].cidr_block, 8, each.value.net_num)
   availability_zone       = each.value.az
   map_public_ip_on_launch = true
+  tags = { Name = each.key }
+}
+
+resource "aws_subnet" "private" {
+  for_each = var.enable_network ? local.private_subnets : {}
+  vpc_id                  = aws_vpc.main[0].id
+  cidr_block              = cidrsubnet(aws_vpc.main[0].cidr_block, 8, each.value.net_num)
+  availability_zone       = each.value.az
+  map_public_ip_on_launch = false
   tags = { Name = each.key }
 }
 
@@ -20,7 +34,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main[0].id
 }
 
-resource "aws_route_table" "main" {
+resource "aws_route_table" "public" {
   count  = var.enable_network ? 1 : 0
   vpc_id = aws_vpc.main[0].id
 
@@ -30,8 +44,19 @@ resource "aws_route_table" "main" {
   }
 }
 
+resource "aws_route_table" "private" {
+  count  = var.enable_network ? 1 : 0
+  vpc_id = aws_vpc.main[0].id
+}
+
 resource "aws_route_table_association" "public" {
   for_each       = aws_subnet.public
   subnet_id      = each.value.id
-  route_table_id = aws_route_table.main[0].id
+  route_table_id = aws_route_table.public[0].id
+}
+
+resource "aws_route_table_association" "private" {
+  for_each       = aws_subnet.private
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private[0].id
 }
